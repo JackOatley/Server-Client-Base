@@ -1,0 +1,29 @@
+{
+  "name": "server-client-base",
+  "version": "1.0.0",
+  "description": "",
+  "main": "none",
+  "scripts": {
+    "compile:server": "babel js/server.js -o bin/server.js",
+    "compile:client": "babel js/client.js -o bin/client.js",
+    "minify:server": "uglifyjs bin/server.js -o bin/server.min.js",
+    "minify:client": "uglifyjs bin/client.js -o bin/client.min.js",
+	"client": "start cmd.exe /K node test/clientTest.js",
+	"server": "node test/serverTest.js",
+	"test": "npm run compile:server && npm run compile:client && npm run client && npm run server",
+    "build": "npm run test && npm run minify:server && npm run minify:client"
+  },
+  "author": "Jack Oatley",
+  "license": "MIT",
+  "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-preset-env": "^1.7.0",
+    "uglify-js": "^3.3.25",
+    "ws": "^5.1.1"
+  },
+  "babel": {
+    "presets": [
+      "env"
+    ]
+  }
+}
