@@ -24,7 +24,7 @@ class Server {
 		this.socket = new WebSocket.Server({ port: this.port });
 		this.log("Server started!");
 		this.log("Creating event listeners...");
-		this.socket.on("connection", this.onConnection);
+		this.socket.on("connection", this.onConnection.bind(this));
 		this.log("Done!");
 	}
 	
@@ -44,9 +44,8 @@ class Server {
 	 *
 	 */
 	onConnection(socket){
-		let connection = new Connection({
-			server: this,
-			socket: socket,
+		this.log("Creating new connection...");
+		let connection = new Connection(this, socket, {
 			logMessages: true
 		});
 		this.connections.push(connection);
@@ -69,17 +68,16 @@ class Server {
 class Connection {
 	
 	/**
-	 *
+	 * @param {Server} server
+	 * @param {WebSocket} socket
+	 * @param {boolean} options.logMessages
 	 */
-	constructor(server, socket) {
-		
+	constructor(server, socket, options = {}) {
 		this.server = server;
 		this.socket = socket;
-		
-		socket.on("message", this.onMessage);
-		
-		server.log("new Connection: ", Connection);
-		
+		this.logMessages = options.logMessages || false;
+		this.socket.on("message", this.onMessage);
+		this.server.log("Connection created!");
 	}
 	
 	/**

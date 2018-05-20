@@ -38,7 +38,7 @@ var Server = function () {
 			this.socket = new WebSocket.Server({ port: this.port });
 			this.log("Server started!");
 			this.log("Creating event listeners...");
-			this.socket.on("connection", this.onConnection);
+			this.socket.on("connection", this.onConnection.bind(this));
 			this.log("Done!");
 		}
 
@@ -66,9 +66,8 @@ var Server = function () {
 	}, {
 		key: "onConnection",
 		value: function onConnection(socket) {
-			var connection = new Connection({
-				server: this,
-				socket: socket,
+			this.log("Creating new connection...");
+			var connection = new Connection(this, socket, {
 				logMessages: true
 			});
 			this.connections.push(connection);
@@ -103,17 +102,20 @@ var Server = function () {
 var Connection = function () {
 
 	/**
-  *
+  * @param {Server} server
+  * @param {WebSocket} socket
+  * @param {boolean} options.logMessages
   */
 	function Connection(server, socket) {
+		var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+
 		_classCallCheck(this, Connection);
 
 		this.server = server;
 		this.socket = socket;
-
-		socket.on("message", this.onMessage);
-
-		server.log("new Connection: ", Connection);
+		this.logMessages = options.logMessages || false;
+		this.socket.on("message", this.onMessage);
+		this.server.log("Connection created!");
 	}
 
 	/**

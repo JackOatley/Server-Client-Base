@@ -2,4 +2,6 @@
 var Client = require("./../bin/client.js");
 
 client = new Client();
-client.connect();
+setTimeout( function() {
+	client.connect();
+}, 3000 );
