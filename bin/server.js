@@ -65,9 +65,9 @@ var Server = function () {
 
 	}, {
 		key: "onConnection",
-		value: function onConnection(socket) {
+		value: function onConnection(socket, request) {
 			this.log("Creating new connection...");
-			var connection = new Connection(this, socket, {
+			var connection = new Connection(this, socket, request, {
 				logMessages: true
 			});
 			this.connections.push(connection);
@@ -106,15 +106,18 @@ var Connection = function () {
   * @param {WebSocket} socket
   * @param {boolean} options.logMessages
   */
-	function Connection(server, socket) {
-		var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+	function Connection(server, socket, request) {
+		var options = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
 
 		_classCallCheck(this, Connection);
 
 		this.server = server;
 		this.socket = socket;
 		this.logMessages = options.logMessages || false;
-		this.socket.on("message", this.onMessage);
+		this.ip = request.connection.remoteAddress;
+		this.socket.on("close", this.onClose.bind(this));
+		this.socket.on("message", this.onMessage.bind(this));
+		this.server.log("IP: " + this.ip);
 		this.server.log("Connection created!");
 	}
 
@@ -124,8 +127,20 @@ var Connection = function () {
 
 
 	_createClass(Connection, [{
+		key: "onClose",
+		value: function onClose(code, reason) {
+			this.server.log("Error (" + code + ") " + reason);
+		}
+
+		/**
+   *
+   */
+
+	}, {
 		key: "onMessage",
-		value: function onMessage(message) {}
+		value: function onMessage(message) {
+			this.server.log("Recieved message:");
+		}
 	}]);
 
 	return Connection;

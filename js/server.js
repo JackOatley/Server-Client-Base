@@ -43,9 +43,9 @@ class Server {
 	/**
 	 *
 	 */
-	onConnection(socket){
+	onConnection(socket, request){
 		this.log("Creating new connection...");
-		let connection = new Connection(this, socket, {
+		let connection = new Connection(this, socket, request, {
 			logMessages: true
 		});
 		this.connections.push(connection);
@@ -72,18 +72,29 @@ class Connection {
 	 * @param {WebSocket} socket
 	 * @param {boolean} options.logMessages
 	 */
-	constructor(server, socket, options = {}) {
+	constructor(server, socket, request, options = {}) {
 		this.server = server;
 		this.socket = socket;
 		this.logMessages = options.logMessages || false;
-		this.socket.on("message", this.onMessage);
+		this.ip = request.connection.remoteAddress;
+		this.socket.on("close", this.onClose.bind(this));
+		this.socket.on("message", this.onMessage.bind(this));
+		this.server.log("IP: " + this.ip);
 		this.server.log("Connection created!");
 	}
 	
 	/**
 	 *
 	 */
+	onClose(code, reason) {
+		this.server.log("Error (" + code + ") " + reason);
+	}
+	
+	/**
+	 *
+	 */
 	onMessage(message) {
+		this.server.log("Recieved message:");
 	}
 	
 }
