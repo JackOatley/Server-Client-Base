@@ -17,41 +17,60 @@ class Client {
 		this.logRecord = [];
 		this.after = Object.assign({}, _afterProperties, options.after || {});
 		this.after.constructor();
+		this.retryCount = 0;
 	}
 	
 	/**
-	 *
+	 * @param {object} options
+	 * @param {boolean} options.retry
 	 */
 	connect(options) {
 		this.log("Connecting...");
-		this.socket = new WebSocket(this.url);
-		this.socket.addEventListener("open", this.onOpen.bind(this));
-		this.socket.addEventListener("error", this.onError.bind(this));
+		try {
+			this.socket = new WebSocket(this.url);
+			this.socket.addEventListener("open", this.open.bind(this));
+			this.socket.addEventListener("close", this.close.bind(this));
+			this.socket.addEventListener("error", this.error.bind(this));
+			if (options.retry) {
+				this.socket.addEventListener("error", this.retry.bind(this, options));
+			}
+		} catch(err) {
+			this.log("Catch:" + err);
+		}
 		this.after.connect();
 	}
 	
 	/**
 	 *
 	 */
-	onOpen() {
+	open() {
 		this.log("Connection opened!");
-		this.after.onOpen();
+		this.after.open();
 	}
 	
 	/**
 	 *
 	 */
-	onClose() {
+	close() {
 		this.log("Connection closed!");
-		this.after.onClose();
+		this.after.close();
 	}
 	
 	/**
 	 *
 	 */
-	onError(error) {
-		this.log(error);
-		this.after.onError();
+	retry(options) {
+		this.retryCount += 1;
+		this.log("Retrying connection (" + this.retryCount + ")...");
+		this.connect(options);
+	}
+	
+	/**
+	 *
+	 */
+	error(error) {
+		this.log("Error: " + error);
+		this.after.error();
 	}
 	
 	/**

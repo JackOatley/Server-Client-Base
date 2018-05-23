@@ -30,10 +30,12 @@ var Client = function () {
 		this.logRecord = [];
 		this.after = Object.assign({}, _afterProperties, options.after || {});
 		this.after.constructor();
+		this.retryCount = 0;
 	}
 
 	/**
-  *
+  * @param {object} options
+  * @param {boolean} options.retry
   */
 
 
@@ -41,9 +43,17 @@ var Client = function () {
 		key: "connect",
 		value: function connect(options) {
 			this.log("Connecting...");
-			this.socket = new WebSocket(this.url);
-			this.socket.addEventListener("open", this.onOpen.bind(this));
-			this.socket.addEventListener("error", this.onError.bind(this));
+			try {
+				this.socket = new WebSocket(this.url);
+				this.socket.addEventListener("open", this.open.bind(this));
+				this.socket.addEventListener("close", this.close.bind(this));
+				this.socket.addEventListener("error", this.error.bind(this));
+				if (options.retry) {
+					this.socket.addEventListener("error", this.retry.bind(this, options));
+				}
+			} catch (err) {
+				this.log("Catch:" + err);
+			}
 			this.after.connect();
 		}
 
@@ -52,10 +62,10 @@ var Client = function () {
    */
 
 	}, {
-		key: "onOpen",
-		value: function onOpen() {
+		key: "open",
+		value: function open() {
 			this.log("Connection opened!");
-			this.after.onOpen();
+			this.after.open();
 		}
 
 		/**
@@ -63,10 +73,10 @@ var Client = function () {
    */
 
 	}, {
-		key: "onClose",
-		value: function onClose() {
+		key: "close",
+		value: function close() {
 			this.log("Connection closed!");
-			this.after.onClose();
+			this.after.close();
 		}
 
 		/**
@@ -74,10 +84,22 @@ var Client = function () {
    */
 
 	}, {
-		key: "onError",
-		value: function onError(error) {
-			this.log(error);
-			this.after.onError();
+		key: "retry",
+		value: function retry(options) {
+			this.retryCount += 1;
+			this.log("Retrying connection (" + this.retryCount + ")...");
+			this.connect(options);
+		}
+
+		/**
+   *
+   */
+
+	}, {
+		key: "error",
+		value: function error(_error) {
+			this.log("Error: " + _error);
+			this.after.error();
 		}
 
 		/**

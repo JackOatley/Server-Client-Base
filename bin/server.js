@@ -139,7 +139,7 @@ var Connection = function () {
 	}, {
 		key: "onMessage",
 		value: function onMessage(message) {
-			this.server.log("Recieved message:");
+			this.server.log("Recieved message from (" + this.ip + "): " + message);
 		}
 	}]);
 
