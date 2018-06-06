@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 "use strict";
 
 var WebSocket = require("ws");
@@ -17,7 +16,7 @@ function Server() {
 }
 
 /**
- *
+ * Start the server.
  */
 Server.prototype.start = function () {
 	this.log("Starting server...");
@@ -29,6 +28,7 @@ Server.prototype.start = function () {
 };
 
 /**
+ * Stop the server.
  * @param {function} callback A callback function to be run when the server
  * successfully closes.
  */
@@ -43,7 +43,7 @@ Server.prototype.stop = function (callback) {
 };
 
 /**
- *
+ * Callback for when a connection with a client has been made.
  */
 Server.prototype.onConnection = function (socket, request) {
 	this.log("Creating new connection...");
@@ -54,7 +54,8 @@ Server.prototype.onConnection = function (socket, request) {
 };
 
 /**
- *
+ * Log a message on the server and in the terminal.
+ * @param {...} message
  */
 Server.prototype.log = function () {
 	var s = this;
@@ -70,6 +71,8 @@ Server.prototype.log = function () {
 };
 
 /**
+ * Create a Connection. A Connection abstracts the communication between a
+ * client and the server.
  * @param {Server} server
  * @param {WebSocket} socket
  * @param {boolean} options.logMessages
@@ -88,18 +91,18 @@ function Connection(server, socket, request) {
 }
 
 /**
- *
+ * Callback for when the connection has closed.
  */
 Connection.prototype.onClose = function (code, reason) {
 	this.server.log("Error (" + code + ") " + reason);
 };
 
 /**
- *
+ * Callback for when a message has been received from a client.
  */
 Connection.prototype.onMessage = function (message) {
 	this.server.log("Recieved message from (" + this.ip + "): " + message);
 };
 
-//
+// Export
 module.exports = Server;
