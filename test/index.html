@@ -1,0 +1,17 @@
+<html>
+	<head></head>
+	<body>
+		<script src="../bin/client.js"></script>
+		<script>
+		var client = new Client({
+			after: {
+				open: function() {
+					client.send("Hey you, server!");
+				}
+			}
+		});
+
+		client.connect({ retry: true });
+		</script>
+	</body>
+</html>
