@@ -1,15 +1,12 @@
-//#!/usr/bin/env node
-
 const isNodeJs = typeof module !== "undefined";
 const WebSocket = isNodeJs ? require("ws") : WebSocket;
 const noop = () => {};
 
 /**
- * @param {object} options
- * @param {url} options.url
- * @param {object} options.after
+ * @param {object} [opts={}]
+ * @param {url} [opts.url]
+ * @param {object} [opts.after={}]
  */
-
 function Client(opts = {}) {
 	this.url = opts.url || "ws://localhost:8123",
 	this.socket = null;
@@ -20,18 +17,19 @@ function Client(opts = {}) {
 }
 	
 /**
- * @param {object} options
- * @param {boolean} options.retry
+ * Attempts to connect the client to the server.
+ * @param {object} [opts={}]
+ * @param {boolean} [opts.retry]
  */
-Client.prototype.connect = function(options) {
+Client.prototype.connect = function(opts) {
 	this.log("Connecting...");
 	try {
 		this.socket = new WebSocket(this.url);
 		this.socket.addEventListener("open", this.open.bind(this));
 		this.socket.addEventListener("close", this.close.bind(this));
 		this.socket.addEventListener("error", this.error.bind(this));
-		if (options.retry) {
-			this.socket.addEventListener("error", this.retry.bind(this, options));
+		if (opts.retry) {
+			this.socket.addEventListener("error", this.retry.bind(this, opts));
 		}
 	} catch(err) {
 		this.log("Catch:" + err);
@@ -40,7 +38,7 @@ Client.prototype.connect = function(options) {
 }
 
 /**
- *
+ * Callback for when the connection opens.
  */
 Client.prototype.open = function() {
 	this.log("Connection opened!");
@@ -48,7 +46,7 @@ Client.prototype.open = function() {
 }
 
 /**
- *
+ * Callback for when the connection is closed.
  */
 Client.prototype.close = function() {
 	this.log("Connection closed!");
@@ -56,16 +54,17 @@ Client.prototype.close = function() {
 }
 
 /**
- *
+ * If failed to connect, this method is for retrying the connection.
+ * @param {object} opts
  */
-Client.prototype.retry = function(options) {
+Client.prototype.retry = function(opts) {
 	this.retryCount += 1;
 	this.log("Retrying connection (" + this.retryCount + ")...");
-	this.connect(options);
+	this.connect(opts);
 }
 
 /**
- *
+ * Callback for when there is an error.
  */
 Client.prototype.error = function(error) {
 	this.log("Error: " + error);
@@ -73,7 +72,8 @@ Client.prototype.error = function(error) {
 }
 
 /**
- *
+ * Send the given data to the server.
+ * @param {*} data Data to send to the server.
  */
 Client.prototype.send = function(data) {
 	this.socket.send(data);
@@ -81,7 +81,8 @@ Client.prototype.send = function(data) {
 }
 
 /**
- *
+ * Log the given message. Reports this in the regular console or terminal.
+ * @param {*} The message, or value to log to console.
  */
 Client.prototype.log = function(message) {
 	this.logRecord.push(message);
@@ -90,17 +91,15 @@ Client.prototype.log = function(message) {
 }
 
 /**
- *
+ * Add corresponding "after" functions for each prototype method.
  */
 const _afterProperties = (function() {
-	let object = {};
-	let names = Object.getOwnPropertyNames(Client.prototype);
+	const object = {};
+	const names = Object.getOwnPropertyNames(Client.prototype);
 	names.forEach((name) => { object[name] = noop; });
 	return object;
 }());
 
-//
-if (isNodeJs)
-	module.exports = Client;
-else
-	Window.Client = Client;
+// Export depending on environment
+if (isNodeJs) module.exports = Client;
+else Window.Client = Client;
