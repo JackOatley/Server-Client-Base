@@ -11,7 +11,7 @@
     "client": "start cmd.exe /K node test/clientTest.js",
     "server": "node test/serverTest.js",
     "test": "npm run compile:server && npm run compile:client && npm run client && npm run server",
-    "build": "npm run test && npm run minify:server && npm run minify:client"
+    "build": "npm run compile:server && npm run compile:client && npm run minify:server && npm run minify:client"
   },
   "author": "Jack Oatley",
   "license": "MIT",
